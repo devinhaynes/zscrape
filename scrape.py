@@ -1,10 +1,12 @@
 import json
 import requests
 from bs4 import BeautifulSoup
+import paymentCalc
 
 event = {
-    "url": "https://www.zillow.com/homedetails/111-W-Johnson-Dr-Flippin-AR-72634/2057361817_zpid/"
+    "url": "https://www.zillow.com/homedetails/20-Woodside-Ln-Flippin-AR-72634/109079719_zpid/"
 }
+
 
 def lambda_handler(event):
     req_headers = {
@@ -17,14 +19,32 @@ def lambda_handler(event):
 
     page = requests.get(event["url"], headers=req_headers)
 
+    # get zpid from event
+    zpid = event["url"].split("/")[-2].split("_")[0]
+
     soup = BeautifulSoup(page.content, "html.parser")
 
-    price = soup.find('span', {"data-testid" : "price"}).findChild('span').text.replace("$", "").replace(",", "")
+    price = getPrice(soup)
+
+    paymentData = getPaymentData(zpid)
+
+    body = {
+        "price": price,
+    } | paymentData
+
+    print(body)
 
     return {
         'statusCode': 200,
-        'body': json.dumps(price)
+        'body': json.dumps(body)
     }
 
+def getPrice(soup):
+    return soup.find('span', {"data-testid" : "price"}).findChild('span').text.replace("$", "").replace(",", "")
 
-lambda_handler(event)
+def getPaymentData(zpid):
+    return paymentCalc.get_zillow_data(zpid)
+
+
+if __name__ == "__main__":
+    lambda_handler(event)
