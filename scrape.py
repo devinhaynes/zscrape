@@ -3,9 +3,11 @@ import requests
 from bs4 import BeautifulSoup
 import paymentCalc
 
-event = {
-    "url": "https://www.zillow.com/homedetails/20-Woodside-Ln-Flippin-AR-72634/109079719_zpid/"
-}
+# event = {
+#     "url": "https://www.zillow.com/homedetails/20-Woodside-Ln-Flippin-AR-72634/109079719_zpid/"
+# }
+
+event = None
 
 
 def lambda_handler(event):
@@ -47,4 +49,5 @@ def getPaymentData(zpid):
 
 
 if __name__ == "__main__":
-    lambda_handler(event)
+    if event is not None:
+        lambda_handler(event)
